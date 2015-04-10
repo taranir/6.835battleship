@@ -4,6 +4,9 @@ var gameState = new GameState({state: initialState});
 var cpuBoard = new Board({autoDeploy: true, name: "cpu"});
 var playerBoard = new Board({autoDeploy: SKIPSETUP, name: "player"});
 var cursor = new Cursor();
+var GRAB_STRENGTH_THRESHOLD = 0.9;
+var Y_OFFSET = -4;
+var ROLL_MULTIPLIER = -1.2;
 
 // UI SETUP
 setupUserInterface();
@@ -26,13 +29,12 @@ Leap.loop({ hand: function(hand) {
 
   // TODO: 4.1, Moving the cursor with Leap data - done
   // Use the hand data to control the cursor's screen position
-  var cursorPosition = [hand.screenPosition()[0], hand.screenPosition()[1]];
+  var cursorPosition = [hand.screenPosition()[0], hand.screenPosition()[1] + Y_OFFSET]
   cursor.setScreenPosition(cursorPosition);
 
   // TODO: 4.1 - done
   // Get the tile that the player is currently selecting, and highlight it
-  //selectedTile = ?
-  var selectedTile = getIntersectingTile(cursorPosition);
+  selectedTile = getIntersectingTile(cursorPosition);
   if (selectedTile) {
     highlightTile(selectedTile, Colors.GREEN);
   }
@@ -44,7 +46,7 @@ Leap.loop({ hand: function(hand) {
     //  Enable the player to grab, move, rotate, and drop ships to deploy them
 
     // First, determine if grabbing pose or not
-    isGrabbing = (hand.grabStrength > 0.7);
+    isGrabbing = (hand.grabStrength > GRAB_STRENGTH_THRESHOLD);
     
 
     // Grabbing, but no selected ship yet. Look for one.
@@ -63,7 +65,7 @@ Leap.loop({ hand: function(hand) {
     else if (grabbedShip && isGrabbing) {
       //grabbedShip.setScreenPosition([grabbedOffset[0], grabbedOffset[1]]);
       grabbedShip.setScreenPosition([hand.screenPosition()[0] - grabbedOffset[0], hand.screenPosition()[1] - grabbedOffset[1]]);
-      grabbedShip.setScreenRotation((-1.2)*hand.roll());
+      grabbedShip.setScreenRotation(ROLL_MULTIPLIER*hand.roll());
     }
 
     // Finished moving a ship. Release it, and try placing it.
@@ -118,7 +120,6 @@ Leap.loop({ hand: function(hand) {
   }
 }}).use('screenPosition', {scale: LEAPSCALE});
 
-// processSpeech(transcript)
 //  Is called anytime speech is recognized by the Web Speech API
 // Input: 
 //    transcript, a string of possibly multiple words that were recognized
@@ -142,6 +143,7 @@ var processSpeech = function(transcript) {
     if (userSaid(transcript, ["start"])) {
       gameState.startGame();
       processed = true;
+      console.log("game has been started!");
     }
   }
 
@@ -160,7 +162,7 @@ var processSpeech = function(transcript) {
       // TODO: 4.5, CPU's turn
       // Detect the player's response to the CPU's shot: hit, miss, you sunk my ..., game over
       // and register the CPU's shot if it was said
-      if (false) {
+      if (userSaid(transcript, ["hit", "miss", "you sunk my", "game over"])) {
         var response = "playerResponse";
         registerCpuShot(response);
 
@@ -213,7 +215,7 @@ var registerPlayerShot = function() {
 
     if (!result.isGameOver) {
       // TODO: Uncomment nextTurn to move onto the CPU's turn
-      // nextTurn();
+      nextTurn();
     }
   }
 };
@@ -229,6 +231,8 @@ var generateCpuShot = function() {
   var colName = COLNAMES[tile.col]; // e.g. "5"
 
   // TODO: Generate speech and visual cues for CPU shot
+  generateSpeech("fire " + rowName + " " + colName);
+  blinkTile(tile);
 };
 
 // TODO: 4.5, CPU's turn
@@ -251,15 +255,25 @@ var registerCpuShot = function(playerResponse) {
   // Sunk ship
   else if (result.sunkShip) {
     var shipName = result.sunkShip.get('type');
+    message = "Awesome!";
   }
   // Hit or miss
   else {
     var isHit = result.shot.get('isHit');
+    console.log(isHit);
+    if (isHit) {
+      message = "Awesome!";
+    }
+    else {
+      message = "Darn";
+    }
   }
+
+  generateSpeech(message);
 
   if (!result.isGameOver) {
     // TODO: Uncomment nextTurn to move onto the player's next turn
-    // nextTurn();
+    nextTurn();
   }
 };
 
