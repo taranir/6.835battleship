@@ -187,7 +187,7 @@ var processSpeech = function(transcript) {
     else if (gameState.isPlayerTurn() && confirmFireMode) {
       confirmFireMode = false;
       processed = true;
-      if userSaid(transcript, ["yes"])) {
+      if (userSaid(transcript, ["yes"])) {
         // reset move start time
         moveStartTime = new Date();
         moveStartTime = moveStartTime.getTime();
