@@ -8,6 +8,7 @@ var GRAB_STRENGTH_THRESHOLD = 0.9;
 var Y_OFFSET = -4;
 var ROLL_MULTIPLIER = -1.2;
 
+
 // UI SETUP
 setupUserInterface();
 
@@ -47,6 +48,7 @@ Leap.loop({ hand: function(hand) {
 
     // First, determine if grabbing pose or not
     isGrabbing = (hand.grabStrength > GRAB_STRENGTH_THRESHOLD);
+
     
 
     // Grabbing, but no selected ship yet. Look for one.
@@ -66,6 +68,7 @@ Leap.loop({ hand: function(hand) {
       //grabbedShip.setScreenPosition([grabbedOffset[0], grabbedOffset[1]]);
       grabbedShip.setScreenPosition([hand.screenPosition()[0] - grabbedOffset[0], hand.screenPosition()[1] - grabbedOffset[1]]);
       grabbedShip.setScreenRotation(ROLL_MULTIPLIER*hand.roll());
+
     }
 
     // Finished moving a ship. Release it, and try placing it.
@@ -119,6 +122,7 @@ Leap.loop({ hand: function(hand) {
     }
   }
 }}).use('screenPosition', {scale: LEAPSCALE});
+
 
 //  Is called anytime speech is recognized by the Web Speech API
 // Input: 
