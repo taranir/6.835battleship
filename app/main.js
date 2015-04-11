@@ -192,7 +192,7 @@ var processSpeech = function(transcript) {
             "2": "C",
             "3": "D"
           }
-          var tile = "row " + rowToLetter[selectedTile.row] + " column " + parseInt(selectedTile.col+1);
+          var tile = rowToLetter[selectedTile.row] + " " + parseInt(selectedTile.col+1);
         }
         else {
           var tile = "nothing";
