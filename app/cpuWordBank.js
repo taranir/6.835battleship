@@ -6,6 +6,6 @@ var cpuWordBank = {
   miss: ["You missed", "That wasn't even close"],
   cpuHit: ["Yay", "Awesome", "All as planned"],
   cpuMiss: ["Darn", "Poop", "Barnacles"],
-  longTime = ["It sure took you a while.", "I've been waiting for ages."],
-  shortTime = ["Are you sure that's not too hasty?", "Did you even think about that?"]
+  longTime : ["It sure took you a while.", "I've been waiting for ages."],
+  shortTime : ["Are you sure that's not too hasty?", "Did you even think about that?"]
 };
