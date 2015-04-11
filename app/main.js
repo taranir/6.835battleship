@@ -159,7 +159,7 @@ var processSpeech = function(transcript) {
       // TODO: 4.4, Player's turn
       // Detect the 'fire' command, and register the shot if it was said
 
-      if (userSaid(transcript, ["yes"]) && confirmFireMode) {
+      if (userSaid(transcript, ["yes", "yeah"]) && confirmFireMode) {
         // reset move start time
         moveStartTime = new Date();
         moveStartTime = moveStartTime.getTime();
@@ -186,7 +186,7 @@ var processSpeech = function(transcript) {
 
         // check which tile you're pointing at
         if (selectedTile) {
-          var tile = "row " + selectedTile.row + " column " + selectedTile.col;
+          var tile = "row " + selectedTile.row+1 + " column " + selectedTile.col+1;
         }
         else {
           var tile = "nothing";
