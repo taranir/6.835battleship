@@ -303,6 +303,7 @@ var registerCpuShot = function(playerResponse) {
   }
   // Hit or miss
   else {
+    console.log("result shot: " + result.shot);
     var isHit = result.shot.get('isHit');
     console.log(isHit);
     if (isHit) {
