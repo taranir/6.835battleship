@@ -155,15 +155,25 @@ var processSpeech = function(transcript) {
   }
 
   else if (gameState.get('state') == 'playing') {
-    if (gameState.isPlayerTurn() && !confirmFireMode) {
+    if (gameState.isPlayerTurn()) {
       // TODO: 4.4, Player's turn
       // Detect the 'fire' command, and register the shot if it was said
+
+      if (userSaid(transcript, ["yes"]) && confirmFireMode) {
+        // reset move start time
+        moveStartTime = new Date();
+        moveStartTime = moveStartTime.getTime();
+        generateSpeech("Confirmed, firing now");
+        confirmFireMode = false;
+        processed = true;
+        registerPlayerShot()
+      }
+
       if (userSaid(transcript, ["fire"])) {
-
-
         var currentTime = new Date();
         currentTime = currentTime.getTime();
         var timeDifference = currentTime - moveStartTime; // get time in ms
+        console.log("time difference is " + timeDifference/1000 + " seconds");
         var timeMessage = "";
         if ((timeDifference/1000) > 60) { //if it took longer than a minute to make a move
           timeMessage = getRandomPhrase(cpuWordBank.longTime);
@@ -181,20 +191,10 @@ var processSpeech = function(transcript) {
         else {
           var tile = "nothing";
         }
+        console.log("generating confirm message");
         generateSpeech(timeMessage + " Are you sure you want to fire at " + tile);
         processed = true;
       }
-    else if (gameState.isPlayerTurn() && confirmFireMode) {
-      confirmFireMode = false;
-      processed = true;
-      if (userSaid(transcript, ["yes"])) {
-        // reset move start time
-        moveStartTime = new Date();
-        moveStartTime = moveStartTime.getTime();
-        generateSpeech("Confirmed, firing now");
-        registerPlayerShot()
-      }
-    }
   }
 
     else if (gameState.isCpuTurn() && gameState.waitingForPlayer()) {
