@@ -186,7 +186,7 @@ var processSpeech = function(transcript) {
 
         // check which tile you're pointing at
         if (selectedTile) {
-          var tile = "row " + int(selectedTile.row+1) + " column " + int(selectedTile.col+1);
+          var tile = "row " + parseInt(selectedTile.row+1) + " column " + parseInt(selectedTile.col+1);
         }
         else {
           var tile = "nothing";
