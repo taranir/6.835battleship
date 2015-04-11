@@ -8,6 +8,8 @@ var GRAB_STRENGTH_THRESHOLD = 0.9;
 var Y_OFFSET = -4;
 var ROLL_MULTIPLIER = -1.2;
 
+var moveStartTime = new Date();
+moveStartTime = moveStartTime.getTime();
 
 // UI SETUP
 setupUserInterface();
@@ -123,6 +125,7 @@ Leap.loop({ hand: function(hand) {
   }
 }}).use('screenPosition', {scale: LEAPSCALE});
 
+var confirmFireMode = false;
 
 //  Is called anytime speech is recognized by the Web Speech API
 // Input: 
@@ -152,15 +155,47 @@ var processSpeech = function(transcript) {
   }
 
   else if (gameState.get('state') == 'playing') {
-    if (gameState.isPlayerTurn()) {
+    if (gameState.isPlayerTurn() && !confirmFireMode) {
       // TODO: 4.4, Player's turn
       // Detect the 'fire' command, and register the shot if it was said
       if (userSaid(transcript, ["fire"])) {
-        registerPlayerShot();
 
+
+        var currentTime = new Date();
+        currentTime = currentTime.getTime();
+        var timeDifference = currentTime - moveStartTime; // get time in ms
+        var timeMessage = "";
+        if ((timeDifference/1000) > 60) { //if it took longer than a minute to make a move
+          timeMessage = getRandomPhrase(cpuWordBank.longTime);
+        } 
+        else if ((timeDifference/1000) < 30) { //if it took less than 30 sec to make a move
+          timeMessage = getRandomPhrase(cpuWordBank.shortTime); 
+        }
+
+        confirmFireMode = true; //go into confirm mode
+
+        // check which tile you're pointing at
+        if (selectedTile) {
+          var tile = "row " + selectedTile.row + " column " + selectedTile.col;
+        }
+        else {
+          var tile = "nothing";
+        }
+        generateSpeech(timeMessage + " Are you sure you want to fire at " + tile);
         processed = true;
       }
+    else if (gameState.isPlayerTurn() && confirmFireMode) {
+      confirmFireMode = false;
+      processed = true;
+      if userSaid(transcript, ["yes"])) {
+        // reset move start time
+        moveStartTime = new Date();
+        moveStartTime = moveStartTime.getTime();
+        generateSpeech("Confirmed, firing now");
+        registerPlayerShot()
+      }
     }
+  }
 
     else if (gameState.isCpuTurn() && gameState.waitingForPlayer()) {
       // TODO: 4.5, CPU's turn
@@ -178,12 +213,17 @@ var processSpeech = function(transcript) {
   return processed;
 };
 
+var getRandomPhrase = function(phrases) {
+  var i = Math.floor(Math.random()*phrases.length);
+  return phrases[i];
+}
+
 // TODO: 4.4, Player's turn
 // Generate CPU speech feedback when player takes a shot
 var registerPlayerShot = function() {
   // TODO: CPU should respond if the shot was off-board
   if (!selectedTile) {
-    generateSpeech("outside the board");
+    generateSpeech(getRandomPhrase(cpuWordBank.offboard));
   }
 
   // If aiming at a tile, register the player's shot
@@ -197,23 +237,23 @@ var registerPlayerShot = function() {
     // TODO: Generate CPU feedback in three cases
     // Game over
     if (result.isGameOver) {
-      generateSpeech("game over");
+      generateSpeech(getRandomPhrase(cpuWordBank.gameover));
       gameState.endGame("player");
       return;
     }
     // Sunk ship
     else if (result.sunkShip) {
       var shipName = result.sunkShip.get('type');
-      generateSpeech("you sunk my " + shipName);
+      generateSpeech(getRandomPhrase(cpuWordBank.sunkShip) + shipName);
     }
     // Hit or miss
     else {
       var isHit = result.shot.get('isHit');
       if (isHit) {
-        generateSpeech("hit");
+        generateSpeech(getRandomPhrase(cpuWordBank.hit));
       }
       else {
-        generateSpeech("miss");
+        generateSpeech(getRandomPhrase(cpuWordBank.miss));
       }
     }
 
@@ -259,17 +299,17 @@ var registerCpuShot = function(playerResponse) {
   // Sunk ship
   else if (result.sunkShip) {
     var shipName = result.sunkShip.get('type');
-    message = "Awesome!";
+    message = getRandomPhrase(cpuWordBank.cpuHit);
   }
   // Hit or miss
   else {
     var isHit = result.shot.get('isHit');
     console.log(isHit);
     if (isHit) {
-      message = "Awesome!";
+      message = getRandomPhrase(cpuWordBank.cpuHit);
     }
     else {
-      message = "Darn";
+      message = getRandomPhrase(cpuWordBank.cpuMiss);
     }
   }
 
